@@ -227,15 +227,15 @@ export const translations: Translations = {
   no: { ko: "아니요", en: "No", ja: "いいえ", zh: "否" },
 
   // 新しいキーを追加
-  walkAdvice1: { ko: "こまめに水分補給をしましょう", en: "Stay hydrated frequently", ja: "こまめに水分補給をしましょう", zh: "经常补充水分" },
-  walkAdvice2: { ko: "ゆったり散歩を楽しみましょう", en: "Enjoy a leisurely walk", ja: "ゆったり散歩を楽しみましょう", zh: "享受悠闲的散步" },
-  walkAdvice3: { ko: "公園を活用しましょう", en: "Utilize parks", ja: "公園を活用しましょう", zh: "利用公园" },
-  cautionAdvice1: { ko: "日陰や芝生で散歩しましょう", en: "Walk in the shade or on grass", ja: "日陰や芝生で散歩しましょう", zh: "在阴凉处或草地上散步" },
-  cautionAdvice2: { ko: "散歩は15〜20分以内にしましょう", en: "Limit walks to 15-20 minutes", ja: "散歩は15〜20分以内にしましょう", zh: "散步时间控制在15-20分钟以内" },
-  cautionAdvice3: { ko: "肉球を守るための靴やバームを使いましょう", en: "Use paw protectors or balm", ja: "肉球を守るための靴やバームを使いましょう", zh: "使用保护脚垫的鞋或润肤膏" },
-  dangerAdvice1: { ko: "すぐに涼しい場所へ移動しましょう", en: "Move to a cool place immediately", ja: "すぐに涼しい場所へ移動しましょう", zh: "立即移到阴凉处" },
-  dangerAdvice2: { ko: "路面温度が高く、散歩に適していません", en: "Pavement is too hot for walking", ja: "路面温度が高く、散歩に適していません", zh: "路面温度过高，不适合散步" },
-  dangerAdvice3: { ko: "火傷の恐れがあります", en: "Risk of burns", ja: "火傷の恐れがあります", zh: "有烫伤的风险" },
+  walkAdvice1: { ko: "자주 수분을 보충하세요", en: "Stay hydrated frequently", ja: "こまめに水分補給をしましょう", zh: "经常补充水分" },
+  walkAdvice2: { ko: "편안하게 산책을 즐겨보세요", en: "Enjoy a leisurely walk", ja: "ゆったり散歩を楽しみましょう", zh: "享受悠闲的散步" },
+  walkAdvice3: { ko: "공원을 활용합시다", en: "Utilize parks", ja: "公園を活用しましょう", zh: "利用公园" },
+  cautionAdvice1: { ko: "그늘이나 잔디밭에서 산책해 보세요", en: "Walk in the shade or on grass", ja: "日陰や芝生で散歩しましょう", zh: "在阴凉处或草地上散步" },
+  cautionAdvice2: { ko: "산책은 15~20분 이내에 하세요", en: "Limit walks to 15-20 minutes", ja: "散歩は15〜20分以内にしましょう", zh: "散步时间控制在15-20分钟以内" },
+  cautionAdvice3: { ko: "발바닥을 보호하기 위해 신발이나 크림을 사용하세요", en: "Use paw protectors or balm", ja: "肉球を守るための靴やバームを使いましょう", zh: "使用保护脚垫的鞋或润肤膏" },
+  dangerAdvice1: { ko: "즉시 시원한 곳으로 이동합시다", en: "Move to a cool place immediately", ja: "すぐに涼しい場所へ移動しましょう", zh: "立即移到阴凉处" },
+  dangerAdvice2: { ko: "도로 표면 온도가 높아 산책하기에 적합하지 않습니다", en: "Pavement is too hot for walking", ja: "路面温度が高く、散歩に適していません", zh: "路面温度过高，不适合散步" },
+  dangerAdvice3: { ko: "화상의 위험이 있습니다", en: "Risk of burns", ja: "火傷の恐れがあります", zh: "有烫伤的风险" },
 }
 
 export const useTranslation = (language: "ko" | "en" | "ja" | "zh") => {

@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useTranslation } from '../translations/translations';
 import { AppState, WalkReport, AppStateUpdate } from '../appState';
-import Svg, { Text as SvgText, Path } from 'react-native-svg';
+import Svg, { Text as SvgText, Path, Circle } from 'react-native-svg'; // 👈 Circleをimportに追加
 
 // HistoryPagePropsの型定義
 interface HistoryPageProps {
@@ -33,9 +33,33 @@ const PieChartComponent: React.FC<PieChartProps> = ({ data, totalDuration }) => 
   const center = { x: radius, y: radius };
   let currentAngle = 0;
 
-  const dangerSlice = data.find(item => item.name === '危険' || item.name === 'dangerTime' || item.name === 'Danger');
-  const dangerPercentage = dangerSlice ? Math.round((dangerSlice.value / totalDuration) * 100) : 0;
-  
+  // 💡 修正: データが1つだけの場合、円全体を描画する特別なロジックを追加
+  if (data.length === 1 && Math.round((data[0].value / totalDuration) * 100) === 100) {
+    const slice = data[0];
+    const percentage = Math.round((slice.value / totalDuration) * 100);
+
+    return (
+      <View style={pieChartStyles.pieContainer}>
+        <Svg width={chartSize} height={chartSize} viewBox={`0 0 ${chartSize} ${chartSize}`}>
+          <Circle cx={center.x} cy={center.y} r={radius} fill={slice.color} />
+          {percentage > 0 && (
+            <SvgText
+              x={center.x}
+              y={center.y}
+              textAnchor="middle"
+              alignmentBaseline="middle"
+              fontSize="14"
+              fontWeight="bold"
+              fill="white"
+            >
+              {`${percentage}%`}
+            </SvgText>
+          )}
+        </Svg>
+      </View>
+    );
+  }
+
   const polarToCartesian = (angle: number, r: number) => {
     const a = (angle - 90) * Math.PI / 180;
     return {
@@ -82,7 +106,7 @@ const PieChartComponent: React.FC<PieChartProps> = ({ data, totalDuration }) => 
           return (
             <React.Fragment key={index}>
               <Path d={path} fill={slice.color} />
-              {percentage > 5 && ( // 5%未満のスライスはテキストを表示しない
+              {percentage > 0 && ( // 0%のスライスはテキストを表示しない
                 <SvgText
                   x={textPos.x}
                   y={textPos.y}

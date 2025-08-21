@@ -47,7 +47,7 @@ const App = () => {
     dangerTempAlertEnabled: true,
     walkTimeAlertEnabled: true,
     currentPage: "dashboard",
-    asphaltTemp: 28,
+    asphaltTemp: 35,
     airTemp: 26,
     humidity: 65,
     lastUpdated: new Date(),

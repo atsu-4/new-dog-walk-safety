@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 27,
   },
   leftContainer: {
     width: 32, // 右側のアイコンの幅に合わせる
