@@ -4,6 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useTranslation } from '../translations/translations';
 import { AppState, WalkReport, AppStateUpdate } from '../appState';
+import Svg, { Text as SvgText, Path } from 'react-native-svg';
+
+// HistoryPagePropsの型定義
+interface HistoryPageProps {
+  appState: AppState;
+  updateAppState: (updates: AppStateUpdate) => void;
+}
 
 // Pie Chartコンポーネントのpropsに型を定義
 interface PieChartProps {
@@ -11,8 +18,8 @@ interface PieChartProps {
   totalDuration: number;
 }
 
-// シンプルなPie Chartの描画コンポーネントを修正
-const PieChart: React.FC<PieChartProps> = ({ data, totalDuration }) => {
+// 新しい Pie Chartの描画コンポーネント (SVGで描画)
+const PieChartComponent: React.FC<PieChartProps> = ({ data, totalDuration }) => {
   if (totalDuration === 0) {
     return (
       <View style={pieChartStyles.chartPlaceholder}>
@@ -21,45 +28,77 @@ const PieChart: React.FC<PieChartProps> = ({ data, totalDuration }) => {
     );
   }
 
-  // 中央に表示するパーセンテージを計算
+  const chartSize = 150;
+  const radius = chartSize / 2;
+  const center = { x: radius, y: radius };
+  let currentAngle = 0;
+
   const dangerSlice = data.find(item => item.name === '危険' || item.name === 'dangerTime' || item.name === 'Danger');
   const dangerPercentage = dangerSlice ? Math.round((dangerSlice.value / totalDuration) * 100) : 0;
-
-  let startAngle = -90; // 0度を真上にするために-90度から開始
   
+  const polarToCartesian = (angle: number, r: number) => {
+    const a = (angle - 90) * Math.PI / 180;
+    return {
+      x: center.x + (r * Math.cos(a)),
+      y: center.y + (r * Math.sin(a)),
+    };
+  };
+
+  const describeArc = (r: number, startAngle: number, endAngle: number) => {
+    const start = polarToCartesian(startAngle, r);
+    const end = polarToCartesian(endAngle, r);
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+    return [
+      `M${start.x} ${start.y}`,
+      `A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`,
+      `L ${center.x} ${center.y}`,
+      'Z',
+    ].join(' ');
+  };
+
   return (
     <View style={pieChartStyles.pieContainer}>
-      {data.map((slice, index) => {
-        const angle = (slice.value / totalDuration) * 360;
-        const rotate = `rotateZ(${startAngle}deg)`;
-        startAngle += angle;
+      <Svg width={chartSize} height={chartSize} viewBox={`0 0 ${chartSize} ${chartSize}`}>
+        {/* Piechart slices with percentages */}
+        {data.map((slice, index) => {
+          const sliceAngle = (slice.value / totalDuration) * 360;
+          const endAngle = currentAngle + sliceAngle;
+          
+          if (sliceAngle === 0) {
+            return null; // 値が0のスライスは描画しない
+          }
+          
+          const path = describeArc(radius, currentAngle, endAngle);
+          
+          // パーセンテージ表示のための位置計算
+          const midAngle = currentAngle + sliceAngle / 2;
+          const textRadius = radius * 0.7; // 中心から少し離れた位置に配置
+          const textPos = polarToCartesian(midAngle, textRadius);
+          
+          currentAngle = endAngle;
 
-        return (
-          <View
-            key={index}
-            style={[
-              pieChartStyles.pieSlice,
-              {
-                backgroundColor: slice.color,
-                transform: [{ rotateZ: `${rotate}` }],
-              },
-            ]}
-          >
-            <View style={[
-              pieChartStyles.pieSliceInner,
-              { backgroundColor: slice.color, transform: [{ rotateZ: `${angle}deg` }],}
-            ]} />
-          </View>
-        );
-      })}
-      {/* 中央の白い円 */}
-      <View style={pieChartStyles.centerCircle} />
-      {/* 中央にテキストを表示 */}
-      <View style={pieChartStyles.pieTextContainer}>
-        <Text style={pieChartStyles.pieText}>
-          {dangerPercentage}%
-        </Text>
-      </View>
+          const percentage = Math.round((slice.value / totalDuration) * 100);
+
+          return (
+            <React.Fragment key={index}>
+              <Path d={path} fill={slice.color} />
+              {percentage > 5 && ( // 5%未満のスライスはテキストを表示しない
+                <SvgText
+                  x={textPos.x}
+                  y={textPos.y}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  fontSize="14"
+                  fontWeight="bold"
+                  fill="white"
+                >
+                  {`${percentage}%`}
+                </SvgText>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </Svg>
     </View>
   );
 };
@@ -72,39 +111,15 @@ const pieChartStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pieSlice: {
-    width: 150,
-    height: 150,
-    position: 'absolute',
-    borderRadius: 75,
-    overflow: 'hidden',
-  },
-  pieSliceInner: {
-    width: '50%',
-    height: '100%',
-    position: 'absolute',
-    top: 0,
-    left: '50%',
-    transformOrigin: '0% 50%',
-  },
-  centerCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'white',
-    position: 'absolute',
-  },
   pieTextContainer: {
-    position: 'absolute',
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
-    height: '100%',
   },
   pieText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: 'black',
   },
   chartPlaceholder: {
     width: 150,
@@ -259,7 +274,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ appState, updateAppState }) =
           
           <View style={styles.cardContent}>
             <View style={styles.chartContainer}>
-              <PieChart data={chartData} totalDuration={currentReport.duration} />
+              <PieChartComponent data={chartData} totalDuration={currentReport.duration} />
             </View>
             
             <View style={styles.summaryContainer}>

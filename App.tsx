@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, NavigationProp } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AppState, AppSettings, AppStateUpdate, Page, WalkReport, RootStackParamList } from './src/appState';
@@ -32,8 +32,8 @@ const initialWalkReports: WalkReport[] = [
     id: "2",
     startTime: "2024-05-02T16:00:00Z",
     endTime: "2024-05-02T16:25:00Z",
-    duration: 1500,
-    safeTime: 0,
+    duration: 1690,
+    safeTime: 190,
     cautionTime: 1200,
     dangerTime: 300,
     memo: "少し暑かったので日陰で休憩。",
@@ -116,20 +116,16 @@ const App = () => {
     if (appState.isWalking && appState.walkStartTime) {
       timerInterval = setInterval(() => {
         updateAppState(prev => {
-          if (!prev.walkStartTime) return {};
-          const now = new Date();
-          const start = new Date(prev.walkStartTime);
-          const elapsedSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
-          
           const currentTemp = prev.asphaltTemp;
           let { safeTime, cautionTime, dangerTime } = prev.currentWalkData;
+          let walkDuration = prev.walkDuration + 1;
 
           if (currentTemp <= 25) { safeTime += 1; }
           else if (currentTemp <= 35) { cautionTime += 1; }
           else { dangerTime += 1; }
 
           return {
-            walkDuration: elapsedSeconds,
+            walkDuration: walkDuration,
             currentWalkData: { safeTime, cautionTime, dangerTime }
           };
         });
