@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import DetailPage from './src/screens/DetailPage';
 import HistoryPage from './src/screens/HistoryPage';
 import SettingsPage from './src/screens/SettingsPage';
 import InfoPage from './src/screens/InfoPage';
+import { useBluetoothData } from './src/hooks/useBluetoothData';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -47,9 +48,9 @@ const App = () => {
     dangerTempAlertEnabled: true,
     walkTimeAlertEnabled: true,
     currentPage: "dashboard",
-    asphaltTemp: 35,
-    airTemp: 26,
-    humidity: 65,
+    asphaltTemp: 0,
+    airTemp: 0,
+    humidity: 0,
     lastUpdated: new Date(),
     isWalking: false,
     walkStartTime: null,
@@ -59,84 +60,12 @@ const App = () => {
 
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const loadInitialData = async () => {
-    try {
-      const savedSettingsJSON = await AsyncStorage.getItem('userSettings');
-      if (savedSettingsJSON) {
-        const savedSettings: AppSettings = JSON.parse(savedSettingsJSON);
-        updateAppState(savedSettings);
-      }
-      
-      const storedReportsJSON = await AsyncStorage.getItem('walkReports');
-      if (!storedReportsJSON) {
-        await AsyncStorage.setItem('walkReports', JSON.stringify(initialWalkReports));
-      }
-
-      await new Promise<void>(resolve => setTimeout(resolve, 1500));
-      setIsInitialized(true);
-    } catch (e) {
-      console.error("Failed to load initial data:", e);
-      setIsInitialized(true);
-    }
-  };
-
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    const { language, unit, dangerTempAlertEnabled, walkTimeAlertEnabled } = appState;
-    const userSettings: AppSettings = { language, unit, dangerTempAlertEnabled, walkTimeAlertEnabled };
-    AsyncStorage.setItem('userSettings', JSON.stringify(userSettings))
-      .catch(e => console.error("Failed to save settings:", e));
-  }, [isInitialized, appState.language, appState.unit, appState.dangerTempAlertEnabled, appState.walkTimeAlertEnabled]);
-
   const updateAppState = (updates: AppStateUpdate) => {
     setAppState((prev) => ({
       ...prev,
       ...(typeof updates === 'function' ? updates(prev) : updates)
     }));
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      updateAppState(prev => ({
-        asphaltTemp: prev.asphaltTemp + (Math.random() - 0.5) * 2,
-        airTemp: prev.airTemp + (Math.random() - 0.5) * 1.5,
-        humidity: Math.max(20, Math.min(99, prev.humidity + (Math.random() - 0.5) * 5)),
-        lastUpdated: new Date(),
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    let timerInterval: NodeJS.Timeout | null = null;
-    if (appState.isWalking && appState.walkStartTime) {
-      timerInterval = setInterval(() => {
-        updateAppState(prev => {
-          const currentTemp = prev.asphaltTemp;
-          let { safeTime, cautionTime, dangerTime } = prev.currentWalkData;
-          let walkDuration = prev.walkDuration + 1;
-
-          if (currentTemp <= 25) { safeTime += 1; }
-          else if (currentTemp <= 35) { cautionTime += 1; }
-          else { dangerTime += 1; }
-
-          return {
-            walkDuration: walkDuration,
-            currentWalkData: { safeTime, cautionTime, dangerTime }
-          };
-        });
-      }, 1000);
-    }
-    return () => {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-      }
-    };
-  }, [appState.isWalking, appState.walkStartTime, appState.asphaltTemp]);
 
   const toggleWalkState = async () => {
     if (!appState.isWalking) {
@@ -175,6 +104,68 @@ const App = () => {
       });
     }
   };
+
+  const { isConnected } = useBluetoothData(appState, updateAppState);
+
+  const loadInitialData = async () => {
+    try {
+      const savedSettingsJSON = await AsyncStorage.getItem('userSettings');
+      if (savedSettingsJSON) {
+        const savedSettings: AppSettings = JSON.parse(savedSettingsJSON);
+        updateAppState(savedSettings);
+      }
+      
+      const storedReportsJSON = await AsyncStorage.getItem('walkReports');
+      if (!storedReportsJSON) {
+        await AsyncStorage.setItem('walkReports', JSON.stringify(initialWalkReports));
+      }
+
+      await new Promise<void>(resolve => setTimeout(resolve, 1500));
+      setIsInitialized(true);
+    } catch (e) {
+      console.error("Failed to load initial data:", e);
+      setIsInitialized(true);
+    }
+  };
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    const { language, unit, dangerTempAlertEnabled, walkTimeAlertEnabled } = appState;
+    const userSettings: AppSettings = { language, unit, dangerTempAlertEnabled, walkTimeAlertEnabled };
+    AsyncStorage.setItem('userSettings', JSON.stringify(userSettings))
+      .catch(e => console.error("Failed to save settings:", e));
+  }, [isInitialized, appState.language, appState.unit, appState.dangerTempAlertEnabled, appState.walkTimeAlertEnabled]);
+
+  useEffect(() => {
+    let timerInterval: NodeJS.Timeout | null = null;
+    if (appState.isWalking && appState.walkStartTime) {
+      timerInterval = setInterval(() => {
+        updateAppState(prev => {
+          const currentTemp = prev.asphaltTemp;
+          let { safeTime, cautionTime, dangerTime } = prev.currentWalkData;
+          let walkDuration = prev.walkDuration + 1;
+
+          if (currentTemp <= 25) { safeTime += 1; }
+          else if (currentTemp <= 35) { cautionTime += 1; }
+          else { dangerTime += 1; }
+
+          return {
+            walkDuration: walkDuration,
+            currentWalkData: { safeTime, cautionTime, dangerTime }
+          };
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [appState.isWalking, appState.walkStartTime, appState.asphaltTemp]);
 
   if (!isInitialized) {
     return <SplashScreen language={appState.language} />;
