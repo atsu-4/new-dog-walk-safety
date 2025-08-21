@@ -13,14 +13,20 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSBluetoothPeripheralUsageDescription": "앱이 블루투스 기기에 연결하여 센서 데이터를 수신하기 위해 권한이 필요합니다.",
+        "NSBluetoothAlwaysUsageDescription": "앱이 백그라운드에서도 블루투스 기기와 통신하기 위해 권한이 필요합니다."
+      },
+      "bundleIdentifier": "com.yukjb5154.dogwalksafetymobile"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.yukjb5154.dogwalksafetymobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
