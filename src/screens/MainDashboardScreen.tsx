@@ -117,7 +117,7 @@ const MainDashboardScreen: React.FC<MainDashboardProps> = ({ appState, updateApp
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* 1. 危険度ステータスカード */}
       <View style={[styles.statusCard, { backgroundColor: statusConfig[status].bgColor, borderColor: statusConfig[status].color }]}>
         <View style={styles.statusContent}>
@@ -214,7 +214,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#f9fafb',
-    gap: 16,
+  },
+  contentContainer: {
+    paddingBottom: 80, 
   },
   statusCard: {
     borderRadius: 12,

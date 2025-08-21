@@ -30,7 +30,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ appState, updateAppState })
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    // ↓↓↓↓↓↓ この行を修正します ↓↓↓↓↓↓
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    {/* ↑↑↑↑↑↑ ここまで修正します ↑↑↑↑↑↑ */}
       <Text style={styles.headerTitle}>{t("settings")}</Text>
       
       {/* 通知設定 */}
@@ -123,12 +125,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ appState, updateAppState })
     </ScrollView>
   );
 };
-
+// ↓↓↓↓↓↓ この行を修正します ↓↓↓↓↓↓
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#f9fafb',
+  },
+  container: {
+    padding: 16,
+  },
+  contentContainer: {
+    paddingBottom: 80, // 👈 このプロパティを追加します
   },
   headerTitle: {
     fontSize: 20,
@@ -232,5 +239,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 });
+// ↑↑↑↑↑↑ ここまで修正します ↑↑↑↑↑↑
 
 export default SettingsPage;

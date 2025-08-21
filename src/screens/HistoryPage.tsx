@@ -5,10 +5,120 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useTranslation } from '../translations/translations';
 import { AppState, WalkReport, AppStateUpdate } from '../appState';
 
-interface HistoryPageProps {
-  appState: AppState;
-  updateAppState: (updates: AppStateUpdate) => void;
+// Pie Chartコンポーネントのpropsに型を定義
+interface PieChartProps {
+  data: { name: string; value: number; color: string }[];
+  totalDuration: number;
 }
+
+// シンプルなPie Chartの描画コンポーネントを修正
+const PieChart: React.FC<PieChartProps> = ({ data, totalDuration }) => {
+  if (totalDuration === 0) {
+    return (
+      <View style={pieChartStyles.chartPlaceholder}>
+        <Text style={pieChartStyles.chartText}>No Data</Text>
+      </View>
+    );
+  }
+
+  // 中央に表示するパーセンテージを計算
+  const dangerSlice = data.find(item => item.name === '危険' || item.name === 'dangerTime' || item.name === 'Danger');
+  const dangerPercentage = dangerSlice ? Math.round((dangerSlice.value / totalDuration) * 100) : 0;
+
+  let startAngle = -90; // 0度を真上にするために-90度から開始
+  
+  return (
+    <View style={pieChartStyles.pieContainer}>
+      {data.map((slice, index) => {
+        const angle = (slice.value / totalDuration) * 360;
+        const rotate = `rotateZ(${startAngle}deg)`;
+        startAngle += angle;
+
+        return (
+          <View
+            key={index}
+            style={[
+              pieChartStyles.pieSlice,
+              {
+                backgroundColor: slice.color,
+                transform: [{ rotateZ: `${rotate}` }],
+              },
+            ]}
+          >
+            <View style={[
+              pieChartStyles.pieSliceInner,
+              { backgroundColor: slice.color, transform: [{ rotateZ: `${angle}deg` }],}
+            ]} />
+          </View>
+        );
+      })}
+      {/* 中央の白い円 */}
+      <View style={pieChartStyles.centerCircle} />
+      {/* 中央にテキストを表示 */}
+      <View style={pieChartStyles.pieTextContainer}>
+        <Text style={pieChartStyles.pieText}>
+          {dangerPercentage}%
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+const pieChartStyles = StyleSheet.create({
+  pieContainer: {
+    width: 150,
+    height: 150,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pieSlice: {
+    width: 150,
+    height: 150,
+    position: 'absolute',
+    borderRadius: 75,
+    overflow: 'hidden',
+  },
+  pieSliceInner: {
+    width: '50%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: '50%',
+    transformOrigin: '0% 50%',
+  },
+  centerCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'white',
+    position: 'absolute',
+  },
+  pieTextContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  pieText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  chartPlaceholder: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chartText: {
+    color: '#6b7280',
+  },
+});
+
 
 const HistoryPage: React.FC<HistoryPageProps> = ({ appState, updateAppState }) => {
   const t = useTranslation(appState.language);
@@ -125,7 +235,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ appState, updateAppState }) =
   ].filter(item => item.value > 0);
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
       <View style={styles.container}>
         <Text style={styles.headerTitle}>{t("history")}</Text>
 
@@ -148,9 +258,8 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ appState, updateAppState }) =
           </View>
           
           <View style={styles.cardContent}>
-            {/* TODO: rechartの代わりにモバイル対応のチャートをここに配置 */}
-            <View style={styles.chartPlaceholder}>
-              <Text style={styles.chartText}>Pie Chart Placeholder</Text>
+            <View style={styles.chartContainer}>
+              <PieChart data={chartData} totalDuration={currentReport.duration} />
             </View>
             
             <View style={styles.summaryContainer}>
@@ -223,6 +332,9 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
   },
+  contentContainer: {
+    paddingBottom: 80, 
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -256,17 +368,10 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 16,
   },
-  chartPlaceholder: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
+  chartContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  },
-  chartText: {
-    color: '#6b7280',
   },
   summaryContainer: {
     gap: 8,

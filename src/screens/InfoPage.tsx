@@ -65,7 +65,7 @@ const InfoPage: React.FC<InfoPageProps> = ({ appState }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.headerTitle}>{t("info")}</Text>
 
       {/* About App */}
@@ -170,6 +170,11 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f9fafb',
   },
+  // ↓↓↓↓↓↓ このスタイルを追加します ↓↓↓↓↓↓
+  contentContainer: {
+    paddingBottom: 80, 
+  },
+  // ↑↑↑↑↑↑ ここまで追加します ↑↑↑↑↑↑
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
