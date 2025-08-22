@@ -28,7 +28,7 @@ export const useSensorData = (
         // ★★★ 핵심 수정 사항 ★★★
         // 서버에서 보낸 중첩된 데이터 구조에 맞게 올바른 경로에서 값을 가져옵니다.
         updateAppState({
-          asphaltTemp: data.mlx90614.ambient_temperature,
+          asphaltTemp: data.mlx90614.object_temperature,
           airTemp: data.bme280.temperature,
           humidity: data.bme280.humidity,
           lastUpdated: new Date(),
