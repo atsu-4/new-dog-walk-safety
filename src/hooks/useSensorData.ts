@@ -41,7 +41,7 @@ export const useSensorData = (
     };
 
     fetchData();
-    intervalId.current = setInterval(fetchData, 5000);
+    intervalId.current = setInterval(fetchData, 1500);
 
     return () => {
       if (intervalId.current) {
